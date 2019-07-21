@@ -1,10 +1,14 @@
 package com.lassulfi.app.photoapp.api.users.service;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +19,13 @@ import com.lassulfi.app.photoapp.api.users.shared.UserDto;
 @Service
 public class UsersServiceImpl implements UsersService {
 
-	private UserRepository userRespository;
+	private UserRepository userRepository;
 	
 	private BCryptPasswordEncoder passwordEncoder;
 	
 	@Autowired
 	public UsersServiceImpl(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
-		this.userRespository = userRepository;
+		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 	}
 	
@@ -35,11 +39,20 @@ public class UsersServiceImpl implements UsersService {
 		
 		UserEntity userEntity = mapper.map(userDetails, UserEntity.class);
 
-		userRespository.save(userEntity);
+		userRepository.save(userEntity);
 		
 		UserDto savedUser = mapper.map(userEntity, UserDto.class);
 		
 		return savedUser;
+	}
+
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		UserEntity userEntity = userRepository.findByEmail(username);
+		
+		if(userEntity == null) throw new UsernameNotFoundException(username);
+		
+		return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), true, true, true, true, new ArrayList<>());
 	}
 
 }
