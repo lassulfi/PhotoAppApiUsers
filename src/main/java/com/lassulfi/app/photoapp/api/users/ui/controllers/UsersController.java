@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.lassulfi.app.photoapp.api.users.service.UsersService;
 import com.lassulfi.app.photoapp.api.users.shared.UserDto;
 import com.lassulfi.app.photoapp.api.users.ui.model.CreateUserRequestModel;
+import com.lassulfi.app.photoapp.api.users.ui.model.CreateUserResponseModel;
 
 @RestController
 @RequestMapping("/users")
@@ -34,14 +35,16 @@ public class UsersController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<Void> createUser(@Valid @RequestBody CreateUserRequestModel userDetails) {
+	public ResponseEntity<CreateUserResponseModel> createUser(@Valid @RequestBody CreateUserRequestModel userDetails) {
 		ModelMapper mapper = new ModelMapper();
 		mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 		
 		UserDto userDto = mapper.map(userDetails, UserDto.class);
 		
-		usersService.createUser(userDto);
+		UserDto createdUser = usersService.createUser(userDto);
 		
-		return new ResponseEntity<Void>(HttpStatus.CREATED);
+		CreateUserResponseModel returnValue = mapper.map(createdUser, CreateUserResponseModel.class);
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
 	}
 }
