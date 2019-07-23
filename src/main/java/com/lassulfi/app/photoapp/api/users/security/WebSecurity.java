@@ -15,17 +15,17 @@ import com.lassulfi.app.photoapp.api.users.service.UsersService;
 @EnableWebSecurity
 public class WebSecurity extends WebSecurityConfigurerAdapter {
 	
-	private Environment environment;
 	private UsersService usersService;
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
+	private Environment environment;
 	
 	@Autowired
-	public WebSecurity(Environment environment, 
-			UsersService usersService, 
-			BCryptPasswordEncoder bCryptPasswordEncoder) {
-		this.environment = environment;
+	public WebSecurity(UsersService usersService,
+			BCryptPasswordEncoder bCryptPasswordEncoder,
+			Environment environment) {
 		this.usersService = usersService;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+		this.environment = environment;
 	}
 
 	@Override
@@ -35,15 +35,22 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 			.and()
 			.authorizeRequests()
 			.antMatchers("/**")
-			.hasIpAddress(environment.getProperty("gateway.ip"))
+			.permitAll()
 			.and()
-			.addFilter(new AuthenticationFilter());
+			.addFilter(getAuthenticationFilter());
 		http.headers().frameOptions().disable();
 	}
 
+	private AuthenticationFilter getAuthenticationFilter() throws Exception {
+		AuthenticationFilter authenticationFilter = new AuthenticationFilter(this.usersService, 
+				this.environment, this.authenticationManager());
+		
+		return authenticationFilter;
+	}
+	
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(usersService).passwordEncoder(bCryptPasswordEncoder);
+		auth.userDetailsService(this.usersService).passwordEncoder(this.bCryptPasswordEncoder);
 	}
 
 	
