@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +21,7 @@ import com.lassulfi.app.photoapp.api.users.service.UsersService;
 import com.lassulfi.app.photoapp.api.users.shared.UserDto;
 import com.lassulfi.app.photoapp.api.users.ui.model.CreateUserRequestModel;
 import com.lassulfi.app.photoapp.api.users.ui.model.CreateUserResponseModel;
+import com.lassulfi.app.photoapp.api.users.ui.model.UserResponseModel;
 
 @RestController
 @RequestMapping("/users")
@@ -53,5 +55,17 @@ public class UsersController {
 		CreateUserResponseModel returnValue = mapper.map(createdUser, CreateUserResponseModel.class);
 		
 		return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
+	}
+	
+	@GetMapping(value="/{userId}",
+			produces = {
+					MediaType.APPLICATION_XML_VALUE,
+					MediaType.APPLICATION_JSON_VALUE
+			})
+	public ResponseEntity<UserResponseModel> getUser(@PathVariable("userId") String userId) {
+		UserDto userDto = usersService.getUserById(userId);
+		UserResponseModel returnValue = new ModelMapper().map(userDto, UserResponseModel.class);
+		
+		return ResponseEntity.ok().body(returnValue);
 	}
 }
