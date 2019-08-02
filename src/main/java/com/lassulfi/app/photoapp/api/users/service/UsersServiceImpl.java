@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.userdetails.User;
@@ -21,14 +23,18 @@ import com.lassulfi.app.photoapp.api.users.data.UserRepository;
 import com.lassulfi.app.photoapp.api.users.shared.UserDto;
 import com.lassulfi.app.photoapp.api.users.ui.model.AlbumResponseModel;
 
+import feign.FeignException;
+
 @Service
 public class UsersServiceImpl implements UsersService {
 
 	private UserRepository userRepository;
 	private BCryptPasswordEncoder passwordEncoder;
 //	private RestTemplate restTemplate;
-	private Environment environment;
+//	private Environment environment;
 	private AlbumsServiceClient albumsServiceClient;
+	
+	Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
 	public UsersServiceImpl(UserRepository userRepository, 
@@ -39,7 +45,7 @@ public class UsersServiceImpl implements UsersService {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 //		this.restTemplate = restTemplate;
-		this.environment = environment;
+//		this.environment = environment;
 		this.albumsServiceClient = albumsServiceClient;
 	}
 	
@@ -94,7 +100,13 @@ public class UsersServiceImpl implements UsersService {
 //						new ParameterizedTypeReference<List<AlbumResponseModel>>() {});
 //		List<AlbumResponseModel> albumsList = albumsListResponse.getBody();
 		
-		List<AlbumResponseModel> albumsList = albumsServiceClient.getAlbums(userId);
+		List<AlbumResponseModel> albumsList = null;
+		try {
+			albumsList = albumsServiceClient.getAlbums(userId);
+		} catch (FeignException e) {
+			// TODO Auto-generated catch block
+			logger.error(e.getLocalizedMessage());
+		}
 		
 		userDto.setAlbums(albumsList);
 		
