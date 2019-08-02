@@ -23,8 +23,6 @@ import com.lassulfi.app.photoapp.api.users.data.UserRepository;
 import com.lassulfi.app.photoapp.api.users.shared.UserDto;
 import com.lassulfi.app.photoapp.api.users.ui.model.AlbumResponseModel;
 
-import feign.FeignException;
-
 @Service
 public class UsersServiceImpl implements UsersService {
 
@@ -100,13 +98,7 @@ public class UsersServiceImpl implements UsersService {
 //						new ParameterizedTypeReference<List<AlbumResponseModel>>() {});
 //		List<AlbumResponseModel> albumsList = albumsListResponse.getBody();
 		
-		List<AlbumResponseModel> albumsList = null;
-		try {
-			albumsList = albumsServiceClient.getAlbums(userId);
-		} catch (FeignException e) {
-			// TODO Auto-generated catch block
-			logger.error(e.getLocalizedMessage());
-		}
+		List<AlbumResponseModel> albumsList = albumsServiceClient.getAlbums(userId);
 		
 		userDto.setAlbums(albumsList);
 		
